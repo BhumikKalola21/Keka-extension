@@ -1,0 +1,754 @@
+/**
+ * Keka Attendance Tracker Styles
+ * Horizontal Header Bar Design with Icons
+ */
+
+/* Main container - horizontal header bar */
+#keka-attendance-tracker {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 1000px;
+  width: 30%;
+  z-index: 999999;
+  background: linear-gradient(135deg, #1a1d2e 0%, #252837 100%);
+  padding: 8px 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4),
+              0 2px 8px rgba(0, 0, 0, 0.2),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  color: #ffffff;
+  backdrop-filter: blur(20px);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  transition: all 0.3s ease;
+}
+
+#keka-attendance-tracker:hover {
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.5),
+              0 2px 12px rgba(0, 0, 0, 0.3),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Header section - horizontal layout */
+.kat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.kat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kat-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.kat-title svg {
+  width: 20px;
+  height: 20px;
+  color: #60a5fa;
+}
+
+.kat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kat-settings-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #a0a8c0;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.kat-settings-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+.kat-settings-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kat-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.kat-status.clocked-in {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.kat-status.clocked-out {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+.kat-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.kat-status.clocked-in .kat-status-dot {
+  background: #34d399;
+}
+
+.kat-status.clocked-out .kat-status-dot {
+  background: #fb923c;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Completion Badge */
+.kat-completion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: #ffffff;
+  border: 2px solid #34d399;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4),
+              0 0 20px rgba(52, 211, 153, 0.3);
+  animation: completionPulse 2s ease-in-out infinite, slideInBounce 0.6s ease-out;
+}
+
+.kat-completion-badge svg {
+  width: 16px;
+  height: 16px;
+  animation: checkBounce 0.8s ease-out;
+}
+
+@keyframes completionPulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4),
+                0 0 20px rgba(52, 211, 153, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.6),
+                0 0 30px rgba(52, 211, 153, 0.5);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes slideInBounce {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.8);
+  }
+  50% {
+    transform: translateX(5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes checkBounce {
+  0%, 100% { transform: scale(1); }
+  20% { transform: scale(1.3) rotate(10deg); }
+  40% { transform: scale(0.9) rotate(-5deg); }
+  60% { transform: scale(1.1) rotate(3deg); }
+  80% { transform: scale(0.95); }
+}
+
+/* Main content - horizontal layout */
+.kat-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.kat-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Metric card - horizontal compact */
+.kat-metric {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.kat-metric:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.kat-metric-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kat-metric-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kat-metric-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kat-metric-label {
+  font-size: 9px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.kat-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* Icon color schemes for different metrics */
+.kat-metric.primary .kat-metric-icon {
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+}
+
+.kat-metric.success .kat-metric-icon {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+}
+
+.kat-metric.warning .kat-metric-icon {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.kat-metric.danger .kat-metric-icon {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.kat-metric.info .kat-metric-icon {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+/* Value colors */
+.kat-metric.primary .kat-metric-value {
+  color: #60a5fa;
+}
+
+.kat-metric.success .kat-metric-value {
+  color: #34d399;
+}
+
+.kat-metric.warning .kat-metric-value {
+  color: #fbbf24;
+}
+
+.kat-metric.danger .kat-metric-value {
+  color: #f87171;
+}
+
+.kat-metric.info .kat-metric-value {
+  color: #a855f7;
+}
+
+/* Progress indicator - compact for header */
+.kat-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.kat-progress-circle {
+  width: 36px;
+  height: 36px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.kat-progress-circle svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.kat-progress-circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 3;
+}
+
+.kat-progress-circle-fill {
+  fill: none;
+  stroke: #60a5fa;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.kat-progress-circle-fill.completed {
+  stroke: #34d399;
+}
+
+.kat-progress-circle-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.kat-progress-circle-text.completed {
+  color: #34d399;
+}
+
+.kat-progress-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kat-progress-label {
+  font-size: 10px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.kat-progress-percent {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+/* Footer info - hidden in horizontal mode */
+.kat-footer {
+  display: none;
+}
+
+/* Loading state */
+.kat-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.kat-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error state */
+.kat-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  color: #fca5a5;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .kat-content {
+    gap: 16px;
+  }
+  
+  .kat-metric {
+    padding: 6px 12px;
+    gap: 8px;
+  }
+  
+  .kat-metric-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .kat-metric-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .kat-metric-value {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  #keka-attendance-tracker {
+    padding: 10px 16px;
+  }
+  
+  .kat-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .kat-content {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  
+  .kat-metric {
+    font-size: 12px;
+  }
+  
+  .kat-metric-value {
+    font-size: 14px;
+  }
+}
+
+/* Animation for initial appearance */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#keka-attendance-tracker {
+  animation: slideIn 0.4s ease-out;
+}
+
+/* Settings Modal */
+.kat-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999999;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.kat-modal-content {
+  background: linear-gradient(135deg, #1a1d2e 0%, #252837 100%);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.kat-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kat-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.kat-modal-close {
+  background: none;
+  border: none;
+  color: #a0a8c0;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.kat-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.kat-modal-body {
+  padding: 24px;
+}
+
+.kat-form-group {
+  margin-bottom: 20px;
+}
+
+.kat-form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.kat-form-group input[type="number"] {
+  width: 20%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.kat-form-group input[type="number"]:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.kat-form-group small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.kat-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kat-btn-primary,
+.kat-btn-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+}
+
+.kat-btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: #ffffff;
+}
+
+.kat-btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.kat-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #a0a8c0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kat-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== Navbar Chip Styles ===== */
+#keka-time-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.12));
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  margin: 8px 12px;
+  white-space: nowrap;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+#keka-time-chip:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+#keka-time-chip .chip-divider {
+  width: 1px;
+  height: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.15));
+  opacity: 0.6;
+}
+
+#chip-refresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+#chip-refresh:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: scale(1.15);
+}
+
+/* Profile Punch Badge Styles */
+.keka-punch-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid #fff;
+  z-index: 5;
+  animation: pulseBadge 2s ease-in-out infinite;
+}
+
+.keka-punch-badge.out {
+  background: #ef4444;
+}
+
+@keyframes pulseBadge {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+

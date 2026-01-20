@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <script>
+        // Create placeholder icons
+        const sizes = [16, 48, 128];
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Blue gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#3b82f6');
+            gradient.addColorStop(1, '#60a5fa');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // White clock icon
+            ctx.strokeStyle = 'white';
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = size / 16;
+            
+            // Clock circle
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/3, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Clock hands
+            ctx.beginPath();
+            ctx.moveTo(size/2, size/2);
+            ctx.lineTo(size/2, size/2 - size/5);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(size/2, size/2);
+            ctx.lineTo(size/2 + size/6, size/2);
+            ctx.stroke();
+            
+            // Download
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon${size}.png`;
+                a.click();
+            });
+        });
+    </script>
+    <p>Icons will download automatically. Check your downloads folder for icon16.png, icon48.png, and icon128.png.</p>
+</body>
+</html>

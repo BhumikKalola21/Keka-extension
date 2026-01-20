@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Keka Attendance Tracker",
+  "version": "2.0.0",
+  "description": "Live attendance summary for Keka - track check-in, effective hours, breaks, and expected checkout time with real-time API updates",
+  "permissions": ["activeTab", "storage", "tabs", "notifications"],
+  "host_permissions": [
+    "https://*.keka.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.keka.com/*"],
+      "js": [
+        "utils/time.js",
+        "utils/calculator.js",
+        "content.js"
+      ],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
+

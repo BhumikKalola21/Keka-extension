@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Keka Shift Settings</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 20px;
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      color: #333;
+      background-color: #f5f7f9;
+    }
+    
+    .container {
+      text-align: center;
+    }
+    
+    h2 {
+      font-size: 18px;
+      color: #333;
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    
+    .status {
+      font-size: 12px;
+      color: #666;
+      margin-top: 15px;
+      text-align: center;
+      padding: 8px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+    }
+    
+    /* Settings panel styles */
+    .settings-panel {
+      text-align: left;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #e0e4e8;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      background-color: white;
+    }
+    
+    .setting-group {
+      margin-bottom: 18px;
+    }
+    
+    .setting-group h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+      font-size: 14px;
+      font-weight: 400;
+    }
+    
+    .form-group label input[type="checkbox"] {
+      margin-right: 8px;
+      width: 16px;
+      height: 16px;
+      accent-color: #64c3d1;
+    }
+    
+    .time-inputs {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
+    }
+    
+    .time-inputs input[type="number"] {
+      width: 60px;
+      padding: 8px;
+      border: 1px solid #e0e4e8;
+      border-radius: 4px;
+      margin-right: 8px;
+      font-size: 14px;
+    }
+    
+    .time-inputs input[type="number"]:focus {
+      outline: none;
+      border-color: #64c3d1;
+      box-shadow: 0 0 0 2px rgba(100, 195, 209, 0.2);
+    }
+    
+    .time-inputs input[type="number"] {
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .time-inputs span {
+      margin-right: 15px;
+      font-size: 14px;
+      color: #444;
+    }
+    
+    #customSettingsGroup {
+      transition: opacity 0.2s ease-in-out;
+    }
+    
+    .hint {
+      font-size: 11px;
+      color: #666;
+      margin-top: 5px;
+    }
+    
+    .buttons {
+      margin-top: 20px;
+      text-align: center;
+    }
+    
+    .buttons button {
+      padding: 8px 18px;
+      background-color: #64c3d1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .buttons button:hover {
+      background-color: #4aaab8;
+    }
+    
+    .divider {
+      border-top: 1px solid #e0e4e8;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="settings-panel" id="settingsPanel">
+    <h2>Shift Duration Settings</h2>
+    
+    <div class="setting-group">
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="useCustomSettings">
+          Use custom work duration
+        </label>
+      </div>
+      
+      <div id="customSettingsGroup" style="display: none;">
+        <div class="form-group">
+          <label>Work Duration:</label>
+          <div class="time-inputs">
+            <input type="number" id="workHours" min="0" max="12" step="1">
+            <span>hours</span>
+            <input type="number" id="workMinutes" min="0" max="59" step="1">
+            <span>minutes</span>
+          </div>
+          <div class="hint">
+            Standard work duration (default is 9 hours)
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="buttons">
+      <button id="saveSettings">Save Settings</button>
+    </div>
+  </div>
+  
+  <div class="status" id="status">Waiting for Keka page...</div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
+

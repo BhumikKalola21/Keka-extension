@@ -1,0 +1,30 @@
+# Chrome Extension Build Files
+*.crx
+*.pem
+*.zip
+
+# OS Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Editor Files
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+
+# Temporary Files
+tmp/
+temp/
+.cache/
+
+# Node modules (if you add build tools later)
+node_modules/
+package-lock.json
+yarn.lock
+
