@@ -609,6 +609,9 @@
     // Format expected checkout
     checkoutSpan.textContent = metrics.expectedCheckout || "N/A";
 
+    // Update extension badge with effective hours
+    updateExtensionBadge(effHms.h, effHms.m);
+
     // Update tooltip with all details
     const tooltipText = `
       First Check-in: ${formattedCheckinTime}
@@ -631,6 +634,46 @@
     } else {
       checkoutSpan.style.color = "inherit";
       checkoutSpan.style.fontWeight = "500";
+    }
+  }
+
+  /* ========= Extension Badge Update ========= */
+  
+  function updateExtensionBadge(hours, minutes) {
+    try {
+      // Format badge text (e.g., "6:30" for 6 hours 30 minutes)
+      const badgeText = hours > 0 || minutes > 0 ? `${hours}:${pad(minutes)}` : "";
+      
+      // Send message to background script to update badge
+      chrome.runtime.sendMessage({
+        action: "updateBadge",
+        text: badgeText,
+        hours: hours,
+        minutes: minutes
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          // Ignore errors silently
+        }
+      });
+    } catch (e) {
+      // Ignore errors silently
+    }
+  }
+  
+  function clearExtensionBadge() {
+    try {
+      chrome.runtime.sendMessage({
+        action: "updateBadge",
+        text: "",
+        hours: 0,
+        minutes: 0
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          // Ignore errors silently
+        }
+      });
+    } catch (e) {
+      // Ignore errors silently
     }
   }
 

@@ -2,6 +2,13 @@
 const tabFetchTimestamps = new Map();
 const FETCH_COOLDOWN = 10000; // 10 seconds cooldown between auto-fetches
 
+// Store badge data for quick updates
+let lastBadgeData = {
+  text: "",
+  hours: 0,
+  minutes: 0
+};
+
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Check if the page is fully loaded and is a Keka page
@@ -86,4 +93,42 @@ setInterval(() => {
     }
   }
 }, 60000); // Run cleanup every minute
+
+// Handle messages from content script
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "updateBadge") {
+    // Update badge with effective hours
+    const { text, hours, minutes } = request;
+    
+    // Store last badge data
+    lastBadgeData = { text, hours, minutes };
+    
+    // Set badge text (e.g., "6:30")
+    chrome.action.setBadgeText({ text: text });
+    
+    // Set badge background color based on hours
+    let badgeColor = "#3b82f6"; // Blue (default)
+    
+    if (hours >= 9) {
+      badgeColor = "#10b981"; // Green (9+ hours - target reached)
+    } else if (hours >= 7) {
+      badgeColor = "#f59e0b"; // Orange (7-9 hours - almost there)
+    } else if (hours >= 5) {
+      badgeColor = "#3b82f6"; // Blue (5-7 hours - halfway)
+    } else {
+      badgeColor = "#8b5cf6"; // Purple (0-5 hours - just started)
+    }
+    
+    chrome.action.setBadgeBackgroundColor({ color: badgeColor });
+    
+    // Set tooltip text
+    chrome.action.setTitle({ 
+      title: `Keka Tracker - Effective: ${text} hrs` 
+    });
+    
+    sendResponse({ success: true });
+  }
+  
+  return true; // Keep message channel open for async response
+});
 
