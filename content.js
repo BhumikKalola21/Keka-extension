@@ -11,6 +11,7 @@
     useCustomSettings: false,
     workHours: 9,
     workMinutes: 0,
+    chipTheme: "default",
   };
 
   let currentSettings = { ...defaultSettings };
@@ -52,6 +53,34 @@
     },
   };
 
+  const chipThemes = {
+    default: {
+      bg: "linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.12))",
+      border: "1px solid rgba(255, 255, 255, 0.25)",
+      text: "white",
+    },
+    light: {
+      bg: "linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9))",
+      border: "1px solid rgba(100, 116, 139, 0.3)",
+      text: "#1e293b",
+    },
+    blue: {
+      bg: "linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.85))",
+      border: "1px solid rgba(147, 197, 253, 0.5)",
+      text: "white",
+    },
+    green: {
+      bg: "linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.85))",
+      border: "1px solid rgba(110, 231, 183, 0.5)",
+      text: "white",
+    },
+    purple: {
+      bg: "linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(124, 58, 237, 0.85))",
+      border: "1px solid rgba(196, 181, 253, 0.5)",
+      text: "white",
+    },
+  };
+
   const defaultKekaFontFamily =
     'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
@@ -88,6 +117,11 @@
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
+  /** Duration as H:MM (no seconds) for display */
+  function formatTimeHMM(hours, minutes) {
+    return `${hours}:${pad(minutes)}`;
+  }
+
   function formatTimeWithAmPm(hours, minutes, seconds) {
     if (is24HourFormatEnabled) {
       return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
@@ -95,6 +129,16 @@
     const ampm = hours >= 12 ? "PM" : "AM";
     const formattedHours = hours % 12 || 12;
     return `${formattedHours}:${pad(minutes)}:${pad(seconds)} ${ampm}`;
+  }
+
+  /** Clock time as H:MM AM/PM (no seconds) for display */
+  function formatTimeWithAmPmHMM(hours, minutes) {
+    if (is24HourFormatEnabled) {
+      return `${pad(hours)}:${pad(minutes)}`;
+    }
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const hour12 = hours % 12 || 12;
+    return `${hour12}:${pad(minutes)} ${ampm}`;
   }
 
   function toTimeWithAmPm(dateTime) {
@@ -108,6 +152,14 @@
     return `${hour12}:${m.toString().padStart(2, "0")}:${s
       .toString()
       .padStart(2, "0")} ${period}`;
+  }
+
+  /** First check-in from API string as H:MM AM/PM (no seconds) */
+  function toTimeWithAmPmHMM(dateTime) {
+    const timePart = dateTime && dateTime.split("T")[1];
+    if (!timePart) return null;
+    const [h, m] = timePart.split(":").map(Number);
+    return formatTimeWithAmPmHMM(h, m || 0);
   }
 
   function getTotalWorkMinutes() {
@@ -149,6 +201,17 @@
       cachedAttendanceLogs = todaysInfo?.timeEntries || [];
       checkInTime = todaysInfo?.firstLogOfTheDay || "";
       lastFetchTime = Date.now();
+
+      // Save token and origin for background sync (badge updates when user is not on Keka tab)
+      try {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+          chrome.storage.local.set({
+            kekaAccessToken: token,
+            kekaOrigin: location.origin,
+          });
+        }
+      } catch (e) { /* ignore */ }
 
       return cachedAttendanceLogs;
     } catch (e) {
@@ -230,26 +293,21 @@
 
     const isPunchedIn = openIn !== null;
 
-    // NEW: Expected checkout based on First Check-in + Target Hours + Total Break Time
+    const totalWorkMs = getTotalWorkMinutes() * 60000;
+    const remainingMs = Math.max(0, totalWorkMs - effectiveMs);
+
+    // Expected checkout based on First Check-in + Target Hours + Total Break Time
     let expectedCheckout = "Not punched in";
 
     if (firstPunchTime) {
-      const totalWorkMs = getTotalWorkMinutes() * 60000;
-      
-      // Calculate: First Check-in + Target Hours + Break Time
       const expectedCheckoutTime = new Date(firstPunchTime.getTime() + totalWorkMs + breakMs);
-      
-      const remainingMs = Math.max(0, totalWorkMs - effectiveMs);
-      
+
       if (remainingMs > 0) {
-        // Still working towards target
-        expectedCheckout = formatTimeWithAmPm(
+        expectedCheckout = formatTimeWithAmPmHMM(
           expectedCheckoutTime.getHours(),
-          expectedCheckoutTime.getMinutes(),
-          expectedCheckoutTime.getSeconds()
+          expectedCheckoutTime.getMinutes()
         );
       } else {
-        // Target completed
         expectedCheckout = "Completed";
       }
     }
@@ -258,6 +316,7 @@
       effectiveMs,
       grossMs,
       breakMs,
+      remainingMs,
       expectedCheckout,
       lastClockIn,
       lastClockOut,
@@ -389,80 +448,55 @@
     `;
 
     navbarChipElement.innerHTML = `
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;line-height:1;">⏰</span>
-        <span style="font-size:12px;opacity:0.85;">First In:</span>
-        <span id="chip-checkin" style="font-weight:600;">--:--:--</span>
+      <div class="chip-item" title="First Clock In">
+        <span class="chip-emoji">⏰</span>
+        <span class="chip-label">FI</span>
+        <span id="chip-checkin" class="chip-value">--:--</span>
       </div>
-
       <div class="chip-divider"></div>
-
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;line-height:1;">🟢</span>
-        <span style="font-size:12px;opacity:0.85;">Last In:</span>
-        <span id="chip-last-in" style="font-weight:600;">--:--:--</span>
+      <div class="chip-item" title="Last Clock In">
+        <span class="chip-emoji">🟢</span>
+        <span class="chip-label">LIn</span>
+        <span id="chip-last-in" class="chip-value">--:--</span>
       </div>
-
       <div class="chip-divider"></div>
-
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;line-height:1;">🔴</span>
-        <span style="font-size:12px;opacity:0.85;">Last Out:</span>
-        <span id="chip-last-out" style="font-weight:600;">--:--:--</span>
+      <div class="chip-item" title="Last Clock Out">
+        <span class="chip-emoji">🔴</span>
+        <span class="chip-label">LOut</span>
+        <span id="chip-last-out" class="chip-value">--:--</span>
       </div>
-
       <div class="chip-divider"></div>
-
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;line-height:1;">⏱️</span>
-        <span style="font-size:12px;opacity:0.85;">Eff:</span>
-        <span id="chip-effective" style="font-weight:600;">--:--:--</span>
+      <div class="chip-item chip-highlight" title="Time Left to complete target">
+        <span class="chip-emoji">⏳</span>
+        <span class="chip-label">Left</span>
+        <span id="chip-time-left" class="chip-value">--:--</span>
       </div>
-
       <div class="chip-divider"></div>
-
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;line-height:1;">📊</span>
-        <span style="font-size:12px;opacity:0.85;">Gross:</span>
-        <span id="chip-gross" style="font-weight:600;">--:--:--</span>
+      <div class="chip-item" title="Effective Hours">
+        <span class="chip-emoji">⏱️</span>
+        <span class="chip-label">Eff</span>
+        <span id="chip-effective" class="chip-value">--:--</span>
       </div>
-
       <div class="chip-divider"></div>
-
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;line-height:1;">☕</span>
-        <span style="font-size:12px;opacity:0.85;">Break:</span>
-        <span id="chip-break" style="font-weight:600;">--</span>
+      <div class="chip-item" title="Gross Hours">
+        <span class="chip-emoji">📊</span>
+        <span class="chip-label">Gr</span>
+        <span id="chip-gross" class="chip-value">--:--</span>
       </div>
-
       <div class="chip-divider"></div>
-
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;line-height:1;">🚪</span>
-        <span style="font-size:12px;opacity:0.85;">Expected Out:</span>
-        <span id="chip-checkout" style="font-weight:600;max-width:80px;overflow:hidden;text-overflow:ellipsis;">--:--:--</span>
+      <div class="chip-item" title="Break Time">
+        <span class="chip-emoji">☕</span>
+        <span class="chip-label">Br</span>
+        <span id="chip-break" class="chip-value">--</span>
       </div>
-
       <div class="chip-divider"></div>
-
-      <!-- Refresh Button -->
-      <div id="chip-refresh" title="Sync Logs" style="
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        width:18px;
-        height:18px;
-        border-radius:50%;
-        cursor:pointer;
-        font-size:14px;
-
-        background: rgba(255,255,255,0.18);
-        border: 1px solid rgba(255,255,255,0.25);
-
-        transition: background 0.2s ease, transform 0.15s ease;
-      ">
-        🔄
+      <div class="chip-item" title="Expected Checkout">
+        <span class="chip-emoji">🚪</span>
+        <span class="chip-label">EOut</span>
+        <span id="chip-checkout" class="chip-value chip-checkout-val">--:--</span>
       </div>
+      <div class="chip-divider"></div>
+      <div id="chip-refresh" title="Sync Logs" class="chip-refresh-btn">🔄</div>
     `;
 
     /* Divider styling */
@@ -563,118 +597,116 @@
     const checkinSpan = navbarChipElement.querySelector("#chip-checkin");
     const lastInSpan = navbarChipElement.querySelector("#chip-last-in");
     const lastOutSpan = navbarChipElement.querySelector("#chip-last-out");
+    const timeLeftSpan = navbarChipElement.querySelector("#chip-time-left");
     const effectiveSpan = navbarChipElement.querySelector("#chip-effective");
     const grossSpan = navbarChipElement.querySelector("#chip-gross");
     const breakSpan = navbarChipElement.querySelector("#chip-break");
     const checkoutSpan = navbarChipElement.querySelector("#chip-checkout");
 
-    if (!effectiveSpan || !grossSpan || !breakSpan || !checkoutSpan) return;
+    if (!timeLeftSpan || !effectiveSpan || !grossSpan || !breakSpan || !checkoutSpan) return;
 
-    // Format first check-in time
-    const formattedCheckinTime = toTimeWithAmPm(checkInTime) || "--:--:--";
+    const formattedCheckinTime = toTimeWithAmPmHMM(checkInTime) || toTimeWithAmPm(checkInTime) || "--:--";
     checkinSpan.textContent = formattedCheckinTime;
 
-    // Format last clock in time
-    const formattedLastIn = metrics.lastClockIn 
-      ? formatTimeWithAmPm(
-          metrics.lastClockIn.getHours(),
-          metrics.lastClockIn.getMinutes(),
-          metrics.lastClockIn.getSeconds()
-        )
-      : "--:--:--";
+    const formattedLastIn = metrics.lastClockIn
+      ? formatTimeWithAmPmHMM(metrics.lastClockIn.getHours(), metrics.lastClockIn.getMinutes())
+      : "--:--";
     lastInSpan.textContent = formattedLastIn;
 
-    // Format last clock out time
     const formattedLastOut = metrics.lastClockOut
-      ? formatTimeWithAmPm(
-          metrics.lastClockOut.getHours(),
-          metrics.lastClockOut.getMinutes(),
-          metrics.lastClockOut.getSeconds()
-        )
-      : "--:--:--";
+      ? formatTimeWithAmPmHMM(metrics.lastClockOut.getHours(), metrics.lastClockOut.getMinutes())
+      : "--:--";
     lastOutSpan.textContent = formattedLastOut;
 
-    // Format effective time
+    // Time left to complete shift (shown in chip) – H:MM, no seconds
+    const remainingMs = metrics.remainingMs != null ? metrics.remainingMs : Math.max(0, getTotalWorkMinutes() * 60000 - metrics.effectiveMs);
+    const leftHms = msToHms(remainingMs);
+    if (remainingMs <= 0) {
+      timeLeftSpan.textContent = "0:00";
+      timeLeftSpan.title = "Target completed";
+    } else {
+      timeLeftSpan.textContent = formatTimeHMM(leftHms.h, leftHms.m);
+      timeLeftSpan.title = "";
+    }
+
     const effHms = msToHms(metrics.effectiveMs);
-    effectiveSpan.textContent = formatTime(effHms.h, effHms.m, effHms.s);
+    effectiveSpan.textContent = formatTimeHMM(effHms.h, effHms.m);
 
-    // Format gross time
     const grossHms = msToHms(metrics.grossMs);
-    grossSpan.textContent = formatTime(grossHms.h, grossHms.m, grossHms.s);
+    grossSpan.textContent = formatTimeHMM(grossHms.h, grossHms.m);
 
-    // Format break time in minutes
     const breakMinutes = Math.floor(metrics.breakMs / 60000);
     breakSpan.textContent = `${breakMinutes} min`;
 
-    // Format expected checkout
     checkoutSpan.textContent = metrics.expectedCheckout || "N/A";
 
-    // Update extension badge with effective hours
-    updateExtensionBadge(effHms.h, effHms.m);
+    // Badge shows time left (for when user is on a non-Keka tab)
+    updateExtensionBadge(leftHms.h, leftHms.m, remainingMs <= 0);
 
-    // Update tooltip with all details
-    const tooltipText = `
-      First Check-in: ${formattedCheckinTime}
-      Last Clock In: ${formattedLastIn}
-      Last Clock Out: ${formattedLastOut}
-      Effective: ${formatTime(effHms.h, effHms.m, effHms.s)}
-      Gross: ${formatTime(grossHms.h, grossHms.m, grossHms.s)}
-      Break: ${breakMinutes} min
-      Expected Checkout: ${metrics.expectedCheckout || "N/A"}
-      Status: ${metrics.isPunchedIn ? "Punched In" : "Punched Out"}
-    `.trim();
+    const fullCheckin = toTimeWithAmPm(checkInTime) || formattedCheckinTime;
+    const fullLastIn = metrics.lastClockIn ? formatTimeWithAmPm(metrics.lastClockIn.getHours(), metrics.lastClockIn.getMinutes(), metrics.lastClockIn.getSeconds()) : formattedLastIn;
+    const fullLastOut = metrics.lastClockOut ? formatTimeWithAmPm(metrics.lastClockOut.getHours(), metrics.lastClockOut.getMinutes(), metrics.lastClockOut.getSeconds()) : formattedLastOut;
+    const timeLeftStr = remainingMs <= 0 ? "0:00 (Done)" : formatTime(leftHms.h, leftHms.m, leftHms.s);
+    navbarChipElement.title = [
+      `First Clock In: ${fullCheckin}`,
+      `Last Clock In: ${fullLastIn}`,
+      `Last Clock Out: ${fullLastOut}`,
+      `Time Left: ${timeLeftStr}`,
+      `Effective: ${formatTime(effHms.h, effHms.m, effHms.s)}`,
+      `Gross: ${formatTime(grossHms.h, grossHms.m, grossHms.s)}`,
+      `Break: ${breakMinutes} min`,
+      `Expected Checkout: ${metrics.expectedCheckout || "N/A"}`,
+      metrics.isPunchedIn ? "Status: Punched In" : "Status: Punched Out",
+    ].join("\n");
 
-    navbarChipElement.title = tooltipText;
-
-    // Visual indicator if work is completed
     const totalWorkMs = getTotalWorkMinutes() * 60000;
     if (metrics.effectiveMs >= totalWorkMs) {
-      checkoutSpan.style.color = "#4ade80"; // Green color for completed
+      timeLeftSpan.style.color = "#4ade80";
+      timeLeftSpan.style.fontWeight = "700";
+      checkoutSpan.style.color = "#4ade80";
       checkoutSpan.style.fontWeight = "600";
     } else {
+      timeLeftSpan.style.color = "inherit";
+      timeLeftSpan.style.fontWeight = "600";
       checkoutSpan.style.color = "inherit";
       checkoutSpan.style.fontWeight = "500";
     }
   }
 
-  /* ========= Extension Badge Update ========= */
-  
-  function updateExtensionBadge(hours, minutes) {
+  /* ========= Extension Badge Update (shows time left on non-Keka tabs) ========= */
+
+  function updateExtensionBadge(hoursLeft, minutesLeft, isDone) {
     try {
-      // Format badge text (e.g., "6:30" for 6 hours 30 minutes)
-      const badgeText = hours > 0 || minutes > 0 ? `${hours}:${pad(minutes)}` : "";
-      
-      // Send message to background script to update badge
+      const badgeText = isDone ? "0" : `${hoursLeft}:${pad(minutesLeft)}`;
+      const totalMinutesLeft = hoursLeft * 60 + minutesLeft;
+
       chrome.runtime.sendMessage({
         action: "updateBadge",
         text: badgeText,
-        hours: hours,
-        minutes: minutes
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore errors silently
-        }
+        hours: hoursLeft,
+        minutes: minutesLeft,
+        totalMinutes: totalMinutesLeft,
+        isTimeLeft: true,
+        isDone: isDone,
+      }, () => {
+        if (chrome.runtime.lastError) { /* ignore */ }
       });
-    } catch (e) {
-      // Ignore errors silently
-    }
+    } catch (e) { /* ignore */ }
   }
-  
+
   function clearExtensionBadge() {
     try {
       chrome.runtime.sendMessage({
         action: "updateBadge",
         text: "",
         hours: 0,
-        minutes: 0
-      }, (response) => {
-        if (chrome.runtime.lastError) {
-          // Ignore errors silently
-        }
+        minutes: 0,
+        isTimeLeft: true,
+        isDone: false,
+      }, () => {
+        if (chrome.runtime.lastError) { /* ignore */ }
       });
-    } catch (e) {
-      // Ignore errors silently
-    }
+    } catch (e) { /* ignore */ }
   }
 
   function applyThemeToNavbarChip() {
@@ -683,9 +715,13 @@
     const theme = getCurrentTheme();
     const colors = themeColors[theme];
     const fontFamily = getKekaFontFamily();
+    const chipThemeName = currentSettings.chipTheme || "default";
+    const chipTheme = chipThemes[chipThemeName] || chipThemes.default;
 
-    navbarChipElement.style.color = colors.chipText;
+    navbarChipElement.style.color = chipTheme.text;
     navbarChipElement.style.fontFamily = fontFamily;
+    navbarChipElement.style.background = chipTheme.bg;
+    navbarChipElement.style.border = chipTheme.border;
   }
 
   /* ========= Main Update Logic ========= */
@@ -702,14 +738,15 @@
       const checkinSpan = navbarChipElement.querySelector("#chip-checkin");
       const lastInSpan = navbarChipElement.querySelector("#chip-last-in");
       const lastOutSpan = navbarChipElement.querySelector("#chip-last-out");
+      const timeLeftSpan = navbarChipElement.querySelector("#chip-time-left");
       const effectiveSpan = navbarChipElement.querySelector("#chip-effective");
       const grossSpan = navbarChipElement.querySelector("#chip-gross");
       const breakSpan = navbarChipElement.querySelector("#chip-break");
       const checkoutSpan = navbarChipElement.querySelector("#chip-checkout");
-
       if (checkinSpan) checkinSpan.textContent = "⏳";
       if (lastInSpan) lastInSpan.textContent = "⏳";
       if (lastOutSpan) lastOutSpan.textContent = "⏳";
+      if (timeLeftSpan) timeLeftSpan.textContent = "⏳";
       if (effectiveSpan) effectiveSpan.textContent = "⏳";
       if (grossSpan) grossSpan.textContent = "⏳";
       if (breakSpan) breakSpan.textContent = "⏳";
@@ -727,21 +764,20 @@
         const checkinSpan = navbarChipElement.querySelector("#chip-checkin");
         const lastInSpan = navbarChipElement.querySelector("#chip-last-in");
         const lastOutSpan = navbarChipElement.querySelector("#chip-last-out");
+        const timeLeftSpan = navbarChipElement.querySelector("#chip-time-left");
         const effectiveSpan = navbarChipElement.querySelector("#chip-effective");
         const grossSpan = navbarChipElement.querySelector("#chip-gross");
         const breakSpan = navbarChipElement.querySelector("#chip-break");
         const checkoutSpan = navbarChipElement.querySelector("#chip-checkout");
-
         if (checkinSpan) checkinSpan.textContent = "⚠️";
         if (lastInSpan) lastInSpan.textContent = "⚠️";
         if (lastOutSpan) lastOutSpan.textContent = "⚠️";
+        if (timeLeftSpan) timeLeftSpan.textContent = "⚠️";
         if (effectiveSpan) effectiveSpan.textContent = "⚠️";
         if (grossSpan) grossSpan.textContent = "⚠️";
         if (breakSpan) breakSpan.textContent = "⚠️";
         if (checkoutSpan) checkoutSpan.textContent = "⚠️";
-
-        navbarChipElement.title =
-          "Failed to fetch attendance logs. Click refresh to retry.";
+        navbarChipElement.title = "Failed to fetch. Click refresh to retry.";
       }
       return;
     }
@@ -926,7 +962,7 @@
       (k) => (currentSettings[k] = changes[k].newValue)
     );
 
-    // Just update displays with existing cached data
+    applyThemeToNavbarChip();
     if (cachedAttendanceLogs) {
       const metrics = calculateMetricsFromApiLogs(cachedAttendanceLogs);
       updateNavbarChip(metrics);
@@ -1038,7 +1074,7 @@
     } else if (request.action === "settingsUpdated") {
       if (request.settings) {
         currentSettings = { ...currentSettings, ...request.settings };
-        // Recalculate with existing cache
+        applyThemeToNavbarChip();
         if (cachedAttendanceLogs) {
           const metrics = calculateMetricsFromApiLogs(cachedAttendanceLogs);
           updateNavbarChip(metrics);
@@ -1047,6 +1083,35 @@
       } else {
         sendResponse({ success: false, error: "No settings provided" });
       }
+      return true;
+    } else if (request.action === "getMetrics") {
+      if (!cachedAttendanceLogs) {
+        sendResponse({ success: false, metrics: null });
+        return true;
+      }
+      const metrics = calculateMetricsFromApiLogs(cachedAttendanceLogs);
+      const effHms = msToHms(metrics.effectiveMs);
+      const remainingMs = metrics.remainingMs != null ? metrics.remainingMs : Math.max(0, getTotalWorkMinutes() * 60000 - metrics.effectiveMs);
+      const leftHms = msToHms(remainingMs);
+      const grossHms = msToHms(metrics.grossMs);
+      const breakMinutes = Math.floor(metrics.breakMs / 60000);
+      const formatDt = (d) => d ? formatTimeWithAmPmHMM(d.getHours(), d.getMinutes()) : "--:--";
+      sendResponse({
+        success: true,
+        metrics: {
+          firstCheckInFormatted: toTimeWithAmPmHMM(checkInTime) || toTimeWithAmPm(checkInTime) || "--:--",
+          lastClockInFormatted: formatDt(metrics.lastClockIn),
+          lastClockOutFormatted: formatDt(metrics.lastClockOut),
+          effectiveFormatted: formatTimeHMM(effHms.h, effHms.m),
+          timeLeftFormatted: remainingMs <= 0 ? "0:00" : formatTimeHMM(leftHms.h, leftHms.m),
+          grossFormatted: formatTimeHMM(grossHms.h, grossHms.m),
+          breakMinutes,
+          expectedCheckout: metrics.expectedCheckout || "N/A",
+          remainingMs,
+          effectiveMs: metrics.effectiveMs,
+        },
+        is24HourFormat: is24HourFormatEnabled,
+      });
       return true;
     }
   });

@@ -3,7 +3,7 @@
   "name": "Keka Attendance Tracker",
   "version": "2.2.0",
   "description": "Live attendance summary for Keka - track check-in, effective hours, breaks, and expected checkout time with real-time API updates and badge display",
-  "permissions": ["activeTab", "storage", "tabs", "notifications"],
+  "permissions": ["activeTab", "storage", "tabs", "notifications", "alarms"],
   "host_permissions": [
     "https://*.keka.com/*"
   ],

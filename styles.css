@@ -675,8 +675,10 @@
 /* ===== Navbar Chip Styles ===== */
 #keka-time-chip {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 6px 4px;
   padding: 6px 10px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.12));
   backdrop-filter: blur(14px) saturate(180%);
@@ -684,12 +686,24 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: white;
   margin: 8px 12px;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox: hide scrollbar, content still scrollable */
+  -ms-overflow-style: none; /* IE/Edge */
   transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+/* Chrome/Safari: hide scrollbar, content still scrollable */
+#keka-time-chip::-webkit-scrollbar {
+  display: none;
 }
 
 #keka-time-chip:hover {
@@ -697,19 +711,58 @@
   transform: translateY(-1px);
 }
 
+#keka-time-chip .chip-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+#keka-time-chip .chip-item.chip-highlight .chip-value,
+#keka-time-chip .chip-item.chip-single .chip-value {
+  font-weight: 700;
+}
+
+#keka-time-chip .chip-emoji {
+  font-size: 10px;
+  line-height: 1;
+}
+
+#keka-time-chip .chip-label {
+  font-size: 10px;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+#keka-time-chip .chip-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+#keka-time-chip .chip-value.chip-checkout-val {
+  min-width: 72px;
+  white-space: nowrap;
+}
+
 #keka-time-chip .chip-divider {
   width: 1px;
   height: 14px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.15));
   opacity: 0.6;
+  flex-shrink: 0;
 }
 
-#chip-refresh {
+#keka-time-chip .chip-refresh-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
+  min-width: 18px;
+  flex-shrink: 0;
   border-radius: 50%;
   cursor: pointer;
   font-size: 14px;
@@ -718,9 +771,79 @@
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
-#chip-refresh:hover {
+#keka-time-chip .chip-refresh-btn:hover {
   background: rgba(255, 255, 255, 0.28);
   transform: scale(1.15);
+}
+
+/* Navbar chip responsive */
+@media (max-width: 1600px) {
+  #keka-time-chip {
+    font-size: 11px;
+    gap: 4px 2px;
+    padding: 5px 8px;
+  }
+  #keka-time-chip .chip-label {
+    font-size: 9px;
+  }
+  #keka-time-chip .chip-value.chip-checkout-val {
+    max-width: 60px;
+  }
+}
+
+@media (max-width: 1200px) {
+  #keka-time-chip {
+    margin: 6px 8px;
+    font-size: 10px;
+  }
+  #keka-time-chip .chip-divider {
+    height: 12px;
+  }
+  #keka-time-chip .chip-value.chip-checkout-val {
+    max-width: 52px;
+  }
+}
+
+@media (max-width: 992px) {
+  #keka-time-chip {
+    flex-wrap: wrap;
+    max-width: calc(100vw - 24px);
+    margin: 6px auto;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  #keka-time-chip {
+    font-size: 9px;
+    gap: 2px 2px;
+    padding: 4px 6px;
+    margin: 4px 6px;
+  }
+  #keka-time-chip .chip-emoji {
+    font-size: 9px;
+  }
+  #keka-time-chip .chip-label {
+    font-size: 8px;
+  }
+  #keka-time-chip .chip-value.chip-checkout-val {
+    max-width: 44px;
+  }
+  #keka-time-chip .chip-refresh-btn {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  #keka-time-chip {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 10px;
+    margin: 4px 0;
+  }
 }
 
 /* Profile Punch Badge Styles */
